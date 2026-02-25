@@ -1,0 +1,9 @@
+streamlit
+pandas
+matplotlib
+seaborn
+Pillow
+langchain
+langchain-google-genai
+langchain-core
+google-generativeai
