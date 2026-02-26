@@ -31,6 +31,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 
+# ── MUST be first Streamlit call ──────────────────────────────────────────────
+st.set_page_config(
+    page_title="Titanic Insight",
+    page_icon="⛴",
+    layout="centered",
+    initial_sidebar_state="expanded",
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DATASET LOADER
@@ -643,13 +650,6 @@ def resolve_intent(question: str) -> Optional[dict]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # STREAMLIT UI  (app.py / frontend)
 # ═══════════════════════════════════════════════════════════════════════════════
-
-st.set_page_config(
-    page_title="Titanic Insight",
-    page_icon="⛴",
-    layout="centered",
-    initial_sidebar_state="expanded",
-)
 
 st.markdown("""
 <style>
