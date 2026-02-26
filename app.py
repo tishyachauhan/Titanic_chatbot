@@ -25,9 +25,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 from PIL import Image
-from langchain.tools import tool
-from langchain.agents import AgentExecutor
-from langchain_core.agents import create_tool_calling_agent
+from langchain_core.tools import tool
+from langgraph.prebuilt import create_react_agent
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
@@ -477,27 +477,13 @@ Titanic dataset columns: survived, pclass, sex, age, sibsp, parch, fare, embarke
 """
 
 
-def _make_executor(api_key: str) -> AgentExecutor:
+def _make_executor(api_key: str):
     llm = ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0,
         google_api_key=api_key,
     )
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", SYSTEM_PROMPT),
-        MessagesPlaceholder("chat_history", optional=True),
-        ("human", "{input}"),
-        MessagesPlaceholder("agent_scratchpad"),
-    ])
-    agent = create_tool_calling_agent(llm=llm, tools=ALL_TOOLS, prompt=prompt)
-    return AgentExecutor(
-        agent=agent,
-        tools=ALL_TOOLS,
-        verbose=False,
-        max_iterations=5,
-        handle_parsing_errors=True,
-        return_intermediate_steps=True,
-    )
+    return create_react_agent(llm, ALL_TOOLS)
 
 
 def run_agent_with_rotation(key_manager: KeyManager, question: str, chat_history: list) -> dict:
@@ -514,10 +500,10 @@ def run_agent_with_rotation(key_manager: KeyManager, question: str, chat_history
 
         try:
             executor = _make_executor(key_obj.key)
-            result   = executor.invoke({"input": question, "chat_history": chat_history})
+            result = executor.invoke({"messages": [("human", question)]})
             key_manager.report_success(key_obj)
 
-            output    = result.get("output", "")
+            output = result["messages"][-1].content
             image_b64 = None
             for step in result.get("intermediate_steps", []):
                 tool_out = step[1] if isinstance(step, tuple) else ""
